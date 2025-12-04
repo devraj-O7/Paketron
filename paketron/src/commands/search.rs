@@ -1,11 +1,12 @@
 use anyhow::Result;
 use crate::core::package::Package;
 
-pub async fn search(query: &str) -> Result<()> {
-    println!("Searching for '{}'...", query);
+use crate::core::npm::NpmClient;
 
-    // Mock remote registry search
-    let packages = mock_search_remote(query);
+pub async fn search(query: &str) -> Result<()> {
+    println!("Searching for '{}' on NPM...", query);
+
+    let packages = NpmClient::search(query).await?;
 
     if packages.is_empty() {
         println!("No packages found matching '{}'", query);
@@ -15,9 +16,16 @@ pub async fn search(query: &str) -> Result<()> {
         for pkg in packages {
             println!(
                 "{:<20} {:<10} {}",
-                pkg.name,
+                pkg.name
+                    .chars()
+                    .take(20)
+                    .collect::<String>(), // Truncate name
                 pkg.version,
-                pkg.description.unwrap_or_default()
+                pkg.description
+                    .unwrap_or_default()
+                    .chars()
+                    .take(40)
+                    .collect::<String>() // Truncate description
             );
         }
     }

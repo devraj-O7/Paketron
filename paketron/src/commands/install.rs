@@ -2,6 +2,7 @@ use crate::core::package::{Package, Installer, InstallerType};
 use crate::core::registry::{Registry, LocalRegistry};
 use crate::core::downloader::Downloader;
 use crate::core::installer::Installer as CoreInstaller;
+use crate::core::npm::NpmClient;
 use anyhow::{Result, anyhow};
 use std::path::PathBuf;
 
@@ -18,13 +19,14 @@ pub async fn install(name: &str) -> Result<()> {
         return Ok(());
     }
 
-    // 2. Resolve Package (Mock Remote)
-    let package = resolve_remote_package(name).ok_or_else(|| anyhow!("Package not found"))?;
+    // 2. Resolve Package (NPM)
+    let package = NpmClient::get_package(name).await?
+        .ok_or_else(|| anyhow!("Package '{}' not found on NPM", name))?;
 
     // 3. Download
     let installer = package.installer.as_ref().ok_or_else(|| anyhow!("No installer found"))?;
     let temp_dir = std::env::temp_dir();
-    let target_path = temp_dir.join(format!("{}-installer.exe", name));
+    let target_path = temp_dir.join(format!("{}-{}.tgz", name, package.version));
     
     println!("Downloading from {}...", installer.url);
     Downloader::download(&installer.url, &target_path).await?;

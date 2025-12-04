@@ -15,9 +15,22 @@ impl Installer {
                 cmd
             },
             InstallerType::Zip => {
-                // TODO: Implement zip extraction
-                println!("Zip extraction not yet implemented");
-                return Ok(());
+                println!("Extracting package...");
+                let file = std::fs::File::open(path)?;
+                let tar = flate2::read::GzDecoder::new(file);
+                let mut archive = tar::Archive::new(tar);
+                
+                // Extract to current directory or a specific location?
+                // For now, let's extract to a 'packages' directory in the current folder
+                let target_dir = std::env::current_dir()?.join("packages");
+                archive.unpack(&target_dir)?;
+                
+                println!("Extracted to {:?}", target_dir);
+                
+                // Return the command to run? Or just finish?
+                // For NPM packages, there isn't a single "installer" command usually.
+                // We'll just return a dummy command that does nothing.
+                Command::new("cmd").arg("/c").arg("echo Package extracted")
             }
         };
 

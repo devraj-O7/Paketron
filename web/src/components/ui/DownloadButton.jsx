@@ -17,7 +17,7 @@ export function DownloadButton({ className = '', variant = 'primary' }) {
   const handleDownload = () => {
     // Mock download link
     const link = document.createElement('a');
-    link.href = 'https://github.com/paketron/paketron/releases/download/v0.1.0/paketron-setup.exe';
+    link.href = '/paketron-setup.exe';
     link.download = 'paketron-setup.exe';
     document.body.appendChild(link);
     link.click();
